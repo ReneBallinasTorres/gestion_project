@@ -1,0 +1,21 @@
+    /* Estilo personalizado para un botón gris */
+    .btn-gris {
+        background-color: rgb(184, 191, 198); /* Gris */
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        font-size: 18px;
+        text-align: center;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+        text-decoration: none; /* Elimina el subrayado del enlace */
+    }
+
+    .btn-gris:hover {
+        background-color:rgb(114, 120, 125); /* Gris más oscuro al pasar el ratón */
+    }
+
+    /* Asegúrate de eliminar el subrayado de todos los enlaces */
+    a {
+        text-decoration: none;
+    }
