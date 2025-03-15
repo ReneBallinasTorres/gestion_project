@@ -1,10 +1,38 @@
-<!--?php
+<?php 
 session_start();
-if (!isset($_SESSION['admin'])) {
-    header("Location: login.php");
-    exit();
+include '../connection/connection.php'; // Conexión a la BD
+
+// Verifica si el usuario ha iniciado sesión
+if (!isset($_SESSION['usuarios'])) {
+    echo '<script> 
+            alert("Por favor, inicia sesión");
+            window.location="../components/Login_Admin.php";
+        </script>';
+    session_destroy();
+    die();
 }
-?-->
+
+// Obtiene el ID del usuario desde la sesión
+$id = $_SESSION['usuarios'];
+
+// Consulta para verificar si el usuario tiene rol de administrador (id_rol = 1)
+$consulta = "SELECT * FROM usuarios WHERE id_usuario = '$id' AND id_rol = 1";
+$resultado = mysqli_query($conexion, $consulta);
+$Admin = mysqli_fetch_assoc($resultado);
+
+// Si el usuario no es admin, redirigirlo
+if (!$Admin) {
+    echo '<script>
+            alert("Acceso denegado. No tienes permisos de administrador.");
+            window.location="../Index.php";
+        </script>';
+    session_destroy();
+    die();
+}
+
+// Cerrar conexión
+mysqli_close($conexion);
+?>
 
 <!DOCTYPE html>
 <html lang="es">
@@ -15,10 +43,9 @@ if (!isset($_SESSION['admin'])) {
     <title>Admin Dashboard</title>
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
     <!-- Iconos FontAwesome -->
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="../Styles/style_das_admin.css">
+    <link rel="stylesheet" href="../Styles/style_dashboard.css">
 </head>
 
 <body>
@@ -52,17 +79,6 @@ if (!isset($_SESSION['admin'])) {
 
     <!-- Bootstrap y JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="script.js"></script>
-
-    <style>
-        
-    </style>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            console.log("Dashboard cargado correctamente");
-        });
-    </script>
 
 </body>
 

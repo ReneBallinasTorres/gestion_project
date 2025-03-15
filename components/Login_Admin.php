@@ -7,7 +7,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $pass = mysqli_real_escape_string($conexion, $_POST['pass']);
 
     // Consulta para verificar si el usuario existe
-    $consulta = "SELECT * FROM usuarios WHERE correo = '$correo'";
+    $consulta = "SELECT * FROM usuarios WHERE correo = '$correo' and pass = '$pass'";
     $resultado = mysqli_query($conexion, $consulta);
 
     if ($resultado && mysqli_num_rows($resultado) > 0) {
@@ -20,9 +20,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             // Redirigir al dashboard según el rol
             if ($usuario['id_rol'] == 1) {
-                header("Location: Admin/Dashboard.php");
+                header("Location: ../Admin/Dashboard.php");
             } else {
-                header("Location: Index.php");
+                header("Location: ../Index.php");
             }
             exit();
         } else {
@@ -36,37 +36,35 @@ mysqli_close($conexion);
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../Styles/style_logins.css">
     <title>Login Admin</title>
 
 </head>
 
 <body>
-    
-    <!--?php include 'components/Navbar.php'; ?--> 
+    <?php include 'Navbar.php'; ?>
 
-    <div class="container">
-        <div class="login-form">
-            <h2>Iniciar Sesión</h2>
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+        <div class="card shadow-sm p-4" style="max-width: 400px; width: 100%;">
+            <h2 class="text-center mb-4">Iniciar Sesión Admin</h2>
             <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST">
-                <div class="input-group">
-                    <label for="email">Correo electrónico</label>
-                    <input type="email" id="correo" name="correo" required placeholder="Ingresa tu correo">
+                <div class="mb-3">
+                    <label for="correo" class="form-label">Correo electrónico</label>
+                    <input type="email" class="form-control" id="correo" name="correo" required placeholder="Ingresa tu correo">
                 </div>
-                <div class="input-group">
-                    <label for="password">Contraseña</label>
-                    <input type="password" id="pass" name="pass" required placeholder="Ingresa tu contraseña">
+                <div class="mb-3">
+                    <label for="pass" class="form-label">Contraseña</label>
+                    <input type="password" class="form-control" id="pass" name="pass" required placeholder="Ingresa tu contraseña">
                 </div>
-                <button type="submit" value="Aceptar" name="login_Admin" class="btn-login">Iniciar sesión</button>
+                <button type="submit" class="btn btn-primary w-100">Iniciar sesión</button>
             </form>
         </div>
     </div>
 </body>
-
 
 </html>

@@ -6,8 +6,8 @@ include '../connection/connection.php'; // Conexión a la BD
 if (!isset($_SESSION['usuarios'])) {
     echo '<script> 
             alert("Por favor, inicia sesión");
-            window.location="../Login_Admin.php";
-          </script>';
+            window.location="../components/Login_Admin.php";
+        </script>';
     session_destroy();
     die();
 }
@@ -25,7 +25,7 @@ if (!$Admin) {
     echo '<script>
             alert("Acceso denegado. No tienes permisos de administrador.");
             window.location="../Index.php";
-          </script>';
+        </script>';
     session_destroy();
     die();
 }
@@ -43,10 +43,9 @@ mysqli_close($conexion);
     <title>Admin Dashboard</title>
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
     <!-- Iconos FontAwesome -->
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="../Styles/style_das_admin.css">
+    <link rel="stylesheet" href="../Styles/style_dashboard.css">
 </head>
 
 <body>
@@ -80,18 +79,7 @@ mysqli_close($conexion);
 
     <!-- Bootstrap y JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="script.js"></script>
-
-    <style>
-        
-    </style>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            console.log("Dashboard cargado correctamente");
-        });
-    </script>
-
+    
 </body>
 
 </html>
