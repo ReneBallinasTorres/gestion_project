@@ -28,38 +28,38 @@ if (!$Admin) {
 }
 
 // Verifica si se recibió el ID del usuario a eliminar
-if (isset($_GET['id_usuario'])) {
-    $id_usuario = $_GET['id_usuario'];
+if (isset($_GET['id_proyecto'])) {
+    $id_proyecto = $_GET['id_proyecto'];
 
     // Consulta para eliminar el usuario
-    $query = "DELETE FROM usuarios WHERE id_usuario = '$id_usuario'";
+    $query = "DELETE FROM proyectos WHERE id_proyecto = '$id_proyecto'";
     $resultado = mysqli_query($conexion, $query);
 
     if ($resultado) {
-        $_SESSION['mensaje'] = "Usuario Eliminar correctamente";
+        $_SESSION['mensaje'] = "Proyecto Eliminado correctamente";
         $_SESSION['tipo_mensaje'] = "success";
         // echo '<script>
         //     alert("Usuario eliminado correctamente");
-        //     window.location="../Admin/Dashboard_usuario.php";
+        //     window.location="../Admin/Dashboard_proyecto.php";
         // </script>';
     } else {
-        $_SESSION['mensaje'] = "Error al Eliminar usuario";
+        $_SESSION['mensaje'] = "Error al Eliminar Proyecto";
         $_SESSION['tipo_mensaje'] = "danger";
         // echo '<script>
         //     alert("Error al eliminar usuario");
-        //     window.location="../Admin/Dashboard_usuario.php";
+        //     window.location="../Admin/Dashboard_proyecto.php";
         // </script>';
     }
 } else {
-        $_SESSION['mensaje'] = "Error al Eliminar el usuario";
+        $_SESSION['mensaje'] = "Error al Eliminar el Proyecto";
         $_SESSION['tipo_mensaje'] = "danger";
     // echo '<script>
     //     alert("ID de usuario no válido");
-    //     window.location="../Admin/Dashboard_usuario.php";
+    //     window.location="../Admin/Dashboard_proyecto.php";
     // </script>';
 }
 
 // Cierra la conexión
 mysqli_close($conexion);
-header("Location: ../admin/Dashboard_usuario.php");
+header("Location: ../admin/Dashboard_proyecto.php");
 ?>

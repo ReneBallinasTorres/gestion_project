@@ -48,7 +48,7 @@
     $result1 = $conexion->query($query1);
 
     $query2 = "SELECT id_rol, n_rol FROM roles;";
-    $result2 = $conexion->query($query1);
+    $result2 = $conexion->query($query2);
 
 
     // Consulta para obtener los usuarios, filtrando si hay un término de búsqueda
@@ -67,8 +67,6 @@
             FROM usuarios 
             JOIN roles ON usuarios.id_rol = roles.id_rol";
     }
-
-    $resultado_usuarios = mysqli_query($conexion, $query);
     ?>
 
 
@@ -395,7 +393,7 @@
                     setTimeout(function() {
                         let bsAlert = new bootstrap.Alert(alert);
                         bsAlert.close();
-                    }, 3000);
+                    }, 2200);
                 }
             });
         </script>
