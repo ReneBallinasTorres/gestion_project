@@ -1,4 +1,4 @@
-<?php 
+<?php
 session_start();
 include '../connection/connection.php'; // Conexión a la BD
 
@@ -67,10 +67,10 @@ mysqli_close($conexion);
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <div class="container-fluid">
-                <h4 class="me-auto">Dashboard</h4>
+                <h4 class="me-auto"><b>Dashboard</b></h4>
                 <div class="d-flex align-items-center">
-                    <span class="me-3"><i class="fas fa-bell"></i> Notificaciones</span>
-                    <span class="me-3"><i class="fas fa-user"></i> Lider</span>
+                    <span class="me-3"><i class="fas fa-bell"></i> <b>Notificaciones</b></span>
+                    <span class="me-3"><i class="fas fa-user"></i> <b><?php echo $Lider['n_usuario']; ?> <?php echo $Lider['a_p']; ?> <?php echo $Lider['a_m']; ?></b></span>
                     <a href="../Logout.php" class="btn btn-danger btn-sm">Cerrar sesión</a>
                 </div>
             </div>
