@@ -47,7 +47,7 @@ mysqli_close($conexion);
 </head>
 
 <body>
-    <?php include 'Navbar.php'; ?>
+    <?php include 'Navbar-Login.php'; ?>
 
     <div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
         <div class="card shadow-sm p-4" style="max-width: 400px; width: 100%;">

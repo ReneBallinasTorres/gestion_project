@@ -17,12 +17,12 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav mx-auto">
-                <li class="nav-item me-3"><a class="nav-link" href="Index.php">Inicio</a></li>
-                <li class="nav-item me-3"><a class="nav-link" href="Information/Sobre_Nosotros.php">Sobre Nosotros</a></li>
-                <li class="nav-item me-3"><a class="nav-link" href="Information/Contacto.php">Contacto</a></li>
+                <li class="nav-item me-3"><a class="nav-link" href="../Index.php">Inicio</a></li>
+                <li class="nav-item me-3"><a class="nav-link" href="../Information/Sobre_Nosotros.php">Sobre Nosotros</a></li>
+                <li class="nav-item me-3"><a class="nav-link" href="../Information/Contacto.php">Contacto</a></li>
             </ul>
             <div class="d-flex">
-                <a href="components/Opcion_Login.php" class="btn btn-outline-light me-2">Iniciar Sesión</a>
+                <a href="../components/Opcion_Login.php" class="btn btn-outline-light me-2">Iniciar Sesión</a>
                 <!-- <a href="register.php" class="btn btn-primary">Registrarse</a> -->
             </div>
         </div>
