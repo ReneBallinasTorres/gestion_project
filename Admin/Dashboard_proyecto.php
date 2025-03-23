@@ -42,9 +42,6 @@ $query = "SELECT proyectos.*, usuarios.n_usuario, usuarios.a_p, usuarios.a_m
             FROM proyectos JOIN usuarios ON proyectos.id_usuario = usuarios.id_usuario";
 $resultado_proyectos = mysqli_query($conexion, $query);
 
-
-
-
 // Consulta para obtener los datos de docente_tutor y tutor
 $query1 = "SELECT id_usuario, n_usuario, a_p, a_m FROM usuarios WHERE id_rol = 2";
 $result1 = $conexion->query($query1);

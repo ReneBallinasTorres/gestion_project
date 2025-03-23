@@ -23,7 +23,7 @@ $Lider = mysqli_fetch_assoc($resultado);
 // Si el usuario no es Lider, redirigirlo
 if (!$Lider) {
     echo '<script>
-            alert("Acceso denegado. No tienes permisos de administrador.");
+            alert("Acceso denegado. No tienes permisos de Lider.");
             window.location="../Index.php";
         </script>';
     session_destroy();
@@ -55,9 +55,9 @@ mysqli_close($conexion);
         <h2>Lider Panel</h2>
         <ul>
             <li><a href="Dashboard.php"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-            <li><a href="Dashboard_usuario.php"><i class="fas fa-users"></i> Usuarios</a></li>
-            <li><a href="Dashboard_equipo.php"><i class="fas fa-users"></i> Equipos</a></li>
             <li><a href="Dashboard_proyecto.php"><i class="fas fa-box"></i> Proyectos</a></li>
+            <li><a href="Dashboard_equipo.php"><i class="fas fa-users"></i> Equipos</a></li>
+            <li><a href="Dashboard_actividades.php"><i class="fas fa-users"></i> Actividades</a></li>
             <li><a href="../Logout.php"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
         </ul>
     </div>
