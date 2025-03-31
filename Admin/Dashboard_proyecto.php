@@ -1,9 +1,9 @@
 <?php
-session_start();
 include '../connection/connection.php'; // Conexión a la BD
+session_start();
 
 // Verifica si el usuario ha iniciado sesión
-if (!isset($_SESSION['usuarios'])) {
+if (!isset($_SESSION['id_usuario'])) {
     echo '<script> 
             alert("Por favor, inicia sesión");
             window.location="../components/Login_Admin.php";
@@ -13,7 +13,7 @@ if (!isset($_SESSION['usuarios'])) {
 }
 
 // Obtiene el ID del usuario desde la sesión
-$id = $_SESSION['usuarios'];
+$id = $_SESSION['id_usuario'];
 
 // Consulta para verificar si el usuario tiene rol de administrador (id_rol = 1)
 $consulta = "SELECT * FROM usuarios WHERE id_usuario = '$id' AND id_rol = 1";
@@ -42,7 +42,7 @@ $query = "SELECT proyectos.*, usuarios.n_usuario, usuarios.a_p, usuarios.a_m
             FROM proyectos JOIN usuarios ON proyectos.id_usuario = usuarios.id_usuario";
 $resultado_proyectos = mysqli_query($conexion, $query);
 
-// Consulta para obtener los datos de docente_tutor y tutor
+// Consulta para obtener los datos de proyectos
 $query1 = "SELECT id_usuario, n_usuario, a_p, a_m FROM usuarios WHERE id_rol = 2";
 $result1 = $conexion->query($query1);
 
@@ -100,7 +100,7 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <div class="container-fluid">
-                <h4 class="me-auto"><b>Dashboard</b></h4>
+                <h4 class="me-auto"><b>Creación de Proyectos</b></h4>
                 <div class="d-flex align-items-center">
                     <span class="me-3"><i class="fas fa-bell"></i> <b>Notificaciones</b></span>
                     <span class="me-3"><i class="fas fa-user"></i> <b><?php echo $Admin['n_usuario']; ?> <?php echo $Admin['a_p']; ?> <?php echo $Admin['a_m']; ?></b></span>
@@ -176,14 +176,12 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Mostrar el mensaje -->
-                    <?php if (isset($_SESSION['mensaje'])): ?>
+                    <!-- Mensaje de alerta -->
+                    <?php if (isset($_SESSION['tipo_accion']) && $_SESSION['tipo_accion'] === 'create'): ?>
                         <div id="alerta-mensaje" class="alert alert-<?php echo $_SESSION['tipo_mensaje']; ?> alert-dismissible fade show" role="alert">
                             <?php echo $_SESSION['mensaje']; ?>
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
-                        <?php unset($_SESSION['mensaje']);
-                        unset($_SESSION['tipo_mensaje']); ?>
                     <?php endif; ?>
                     <form id="createForm" method="POST" action="../CRUD/Craer_Proyecto.php">
                         <div class="mb-3">
@@ -200,11 +198,11 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Fecha de Inicio</label>
-                            <input type="date" class="form-control" name="fecha_inicio" min="<?= date('Y-m-d'); ?>" required>
+                            <input type="date" class="form-control" name="fecha_inicio" value="<?= date('Y-m-d'); ?>" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Fecha de Finalización</label>
-                            <input type="date" class="form-control" name="fecha_fin" min="<?= date('Y-m-d'); ?>" required>
+                            <input type="date" class="form-control" name="fecha_fin" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Observaciones</label>
@@ -239,14 +237,12 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Mostrar el mensaje -->
-                    <?php if (isset($_SESSION['mensaje'])): ?>
+                    <!-- Mensaje de alerta -->
+                    <?php if (isset($_SESSION['tipo_accion']) && $_SESSION['tipo_accion'] === 'edit'): ?>
                         <div id="alerta-mensaje" class="alert alert-<?php echo $_SESSION['tipo_mensaje']; ?> alert-dismissible fade show" role="alert">
                             <?php echo $_SESSION['mensaje']; ?>
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
-                        <?php unset($_SESSION['mensaje']);
-                        unset($_SESSION['tipo_mensaje']); ?>
                     <?php endif; ?>
                     <form id="editForm" method="POST" action="../CRUD/Editar_Proyecto.php">
                         <input type="hidden" name="id_proyecto" id="edit-id">
@@ -264,11 +260,11 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Fecha de Inicio</label>
-                            <input type="date" class="form-control" name="fecha_inicio" id="edit-fecha_inicio" min="<?= date('Y-m-d'); ?>" required>
+                            <input type="date" class="form-control" name="fecha_inicio" id="edit-fecha_inicio" value="<?= date('Y-m-d'); ?>" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Fecha de Finalización</label>
-                            <input type="date" class="form-control" name="fecha_fin" id="edit-fecha_fin" min="<?= date('Y-m-d'); ?>" required>
+                            <input type="date" class="form-control" name="fecha_fin" id="edit-fecha_fin" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Observaciones</label>
@@ -295,20 +291,37 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
         </div>
     </div>
 
-    <!-- Modal de Confirmación -->
+    <!-- Modal de Confirmación de Eliminación -->
     <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmación de Eliminación</h5>
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    ¿Estás seguro de que deseas eliminar este Proyecto? Esta acción no se puede deshacer.
+                    ¿Estás seguro de que deseas eliminar este proyecto? Esta acción no se puede deshacer.
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <a id="confirmDeleteBtn" href="#" class="btn btn-danger">Eliminar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal de Mensajes de Eliminación-->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="successModalLabel">Eliminación Exitosa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    ¡El proyecto ha sido eliminado exitosamente!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Aceptar</button>
                 </div>
             </div>
         </div>
@@ -341,38 +354,52 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
             editModal.show();
         }
 
-        //Script de eliminación de proyecto
-        function showDeleteModal(id_proyecto) {
-            // Establece el enlace de confirmación para eliminar el usuario
-            var confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-            confirmDeleteBtn.href = '../CRUD/Eliminar_Proyecto.php?id_proyecto=' + id_proyecto;
-
-            // Muestra el modal de confirmación
-            var deleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
-            deleteModal.show();
-        }
-
         //Script de tiempo de visualización del mensaje del formulario
         document.addEventListener("DOMContentLoaded", function() {
             let alert = document.getElementById('alerta-mensaje');
+            let tipoAccion = '<?php echo isset($_SESSION['tipo_accion']) ? $_SESSION['tipo_accion'] : ''; ?>'; // Obtenemos el tipo de acción desde la sesión
 
-            // Mostrar el modal solo si existe la alerta (es decir, si hay un mensaje en sesión)
+            // Si existe un mensaje
             if (alert) {
-                const modal = new bootstrap.Modal(document.getElementById('createModal'));
-                modal.show();
+                // Mostrar el modal adecuado según el tipo de acción
+                if (tipoAccion === 'create') {
+                    const modalCreate = new bootstrap.Modal(document.getElementById('createModal'));
+                    modalCreate.show();
+                } else if (tipoAccion === 'edit') {
+                    const modalEdit = new bootstrap.Modal(document.getElementById('editModal'));
+                    modalEdit.show();
+                }
 
                 // Desaparecer la alerta después de 3 segundos
                 setTimeout(function() {
                     let bsAlert = new bootstrap.Alert(alert);
                     bsAlert.close();
-                }, 2200);
+                }, 2050);
+                <?php
+                // Limpiar la sesión después de mostrar el modal
+                unset($_SESSION['tipo_accion']);
+                unset($_SESSION['tipo_mensaje']);
+                unset($_SESSION['mensaje']);
+                ?>
             }
         });
 
-        //Script para la fecha de creación
+        //Script de eliminación de proyecto
+        function showDeleteModal(id_proyecto) {
+            const deleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+            document.getElementById('confirmDeleteBtn').href = `../CRUD/Eliminar_Proyecto.php?id_proyecto=${id_proyecto}`;
+            deleteModal.show();
+        }
+
         document.addEventListener("DOMContentLoaded", function() {
-            let today = new Date().toISOString().split('T')[0];
-            document.getElementById("edit-fecha_inicio").setAttribute("min", today);
+            let eliminado = '<?php echo isset($_SESSION['eliminado']) ? $_SESSION['eliminado'] : ''; ?>';
+
+            if (eliminado === '1') {
+                const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                successModal.show();
+            }
+
+            <?php unset($_SESSION['eliminado']); ?>
         });
     </script>
 

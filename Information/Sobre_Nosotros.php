@@ -10,8 +10,6 @@
 </head>
 
 <body>
-
-
 <!-- Navbar -->
     <?php include '../Components/Navbar-Inf.php'; ?>
 
@@ -46,9 +44,7 @@
 
     <?php include '../components/Footer-Inf.php'; ?>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>    
 </body>
 
 </html>

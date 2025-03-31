@@ -1,9 +1,9 @@
 <?php
-session_start();
 include '../connection/connection.php'; // Conexión a la BD
+session_start();
 
 // Verifica si el usuario ha iniciado sesión
-if (!isset($_SESSION['usuarios'])) {
+if (!isset($_SESSION['id_usuario'])) {
     echo '<script> 
             alert("Por favor, inicia sesión");
             window.location="../components/Login_Lider.php";
@@ -13,14 +13,14 @@ if (!isset($_SESSION['usuarios'])) {
 }
 
 // Obtiene el ID del usuario desde la sesión
-$id = $_SESSION['usuarios'];
+$id = $_SESSION['id_usuario'];
 
-// Consulta para verificar si el usuario tiene rol de lider (id_rol = 2)
+// Consulta para verificar si el usuario tiene rol de Lider (id_rol = 2)
 $consulta = "SELECT * FROM usuarios WHERE id_usuario = '$id' AND id_rol = 2";
 $resultado = mysqli_query($conexion, $consulta);
 $Lider = mysqli_fetch_assoc($resultado);
 
-// Si el usuario no es Lider, redirigirlo
+// Si el usuario no es admin, redirigirlo
 if (!$Lider) {
     echo '<script>
             alert("Acceso denegado. No tienes permisos de Lider.");

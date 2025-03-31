@@ -1,9 +1,9 @@
 <?php
-session_start();
 include '../connection/connection.php'; // Conexión a la BD
+session_start();
 
 // Verifica si el usuario ha iniciado sesión
-if (!isset($_SESSION['usuarios'])) {
+if (!isset($_SESSION['id_usuario'])) {
     echo '<script> 
             alert("Por favor, inicia sesión");
             window.location="../components/Login_Admin.php";
@@ -13,7 +13,7 @@ if (!isset($_SESSION['usuarios'])) {
 }
 
 // Obtiene el ID del usuario desde la sesión
-$id = $_SESSION['usuarios'];
+$id = $_SESSION['id_usuario'];
 
 // Consulta para verificar si el usuario tiene rol de administrador (id_rol = 1)
 $consulta = "SELECT * FROM usuarios WHERE id_usuario = '$id' AND id_rol = 1";
@@ -70,7 +70,7 @@ mysqli_close($conexion);
                 <h4 class="me-auto"><b>Dashboard</b></h4>
                 <div class="d-flex align-items-center">
                     <span class="me-3"><i class="fas fa-bell"></i> <b>Notificaciones</b></span>
-                    <span class="me-3"><i class="fas fa-user"></i> <b><?php echo $Admin['n_usuario'];?> <?php echo $Admin['a_p'];?> <?php echo $Admin['a_m'];?></b></span>
+                    <span class="me-3"><i class="fas fa-user"></i> <b><?php echo $Admin['n_usuario']; ?> <?php echo $Admin['a_p']; ?> <?php echo $Admin['a_m']; ?></b></span>
                     <a href="../Logout.php" class="btn btn-danger btn-sm">Cerrar sesión</a>
                 </div>
             </div>

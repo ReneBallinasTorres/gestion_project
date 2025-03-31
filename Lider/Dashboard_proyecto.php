@@ -1,9 +1,9 @@
 <?php
-session_start();
 include '../connection/connection.php'; // Conexión a la BD
+session_start();
 
 // Verifica si el usuario ha iniciado sesión
-if (!isset($_SESSION['usuarios'])) {
+if (!isset($_SESSION['id_usuario'])) {
     echo '<script> 
             alert("Por favor, inicia sesión");
             window.location="../components/Login_Lider.php";
@@ -13,14 +13,14 @@ if (!isset($_SESSION['usuarios'])) {
 }
 
 // Obtiene el ID del usuario desde la sesión
-$id = $_SESSION['usuarios'];
+$id = $_SESSION['id_usuario'];
 
-// Consulta para verificar si el usuario tiene rol de lider (id_rol = 2)
+// Consulta para verificar si el usuario tiene rol de Lider (id_rol = 2)
 $consulta = "SELECT * FROM usuarios WHERE id_usuario = '$id' AND id_rol = 2";
 $resultado = mysqli_query($conexion, $consulta);
 $Lider = mysqli_fetch_assoc($resultado);
 
-// Si el usuario no es Lider, redirigirlo
+// Si el usuario no es admin, redirigirlo
 if (!$Lider) {
     echo '<script>
             alert("Acceso denegado. No tienes permisos de Lider.");
@@ -39,10 +39,12 @@ mysqli_close($conexion);
     Para que no choque con los permisos y validaciones de acceso que estan arriba)*/
 include '../connection/connection.php';
 $query = "SELECT proyectos.*, usuarios.n_usuario, usuarios.a_p, usuarios.a_m 
-            FROM proyectos JOIN usuarios ON proyectos.id_usuario = usuarios.id_usuario";
+        FROM proyectos JOIN usuarios ON proyectos.id_usuario = usuarios.id_usuario
+        WHERE proyectos.id_usuario = '$id'"; // Filtra proyectos solo para el usuario actual (líder)
 $resultado_proyectos = mysqli_query($conexion, $query);
 
-// Consulta para obtener los datos de usuarios_Lider
+
+// Consulta para obtener los datos de proyectos
 $query1 = "SELECT id_usuario, n_usuario, a_p, a_m FROM usuarios WHERE id_rol = 2";
 $result1 = $conexion->query($query1);
 
@@ -196,11 +198,11 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Fecha de Inicio</label>
-                            <input type="date" class="form-control" name="fecha_inicio" id="edit-fecha_inicio" min="<?= date('Y-m-d'); ?>" disabled>
+                            <input type="date" class="form-control" name="fecha_inicio" id="edit-fecha_inicio" disabled>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Fecha de Finalización</label>
-                            <input type="date" class="form-control" name="fecha_fin" id="edit-fecha_fin" min="<?= date('Y-m-d'); ?>" disabled>
+                            <input type="date" class="form-control" name="fecha_fin" id="edit-fecha_fin" disabled>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Observaciones</label>
@@ -261,14 +263,8 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
                 setTimeout(function() {
                     let bsAlert = new bootstrap.Alert(alert);
                     bsAlert.close();
-                }, 2200);
+                }, 2400);
             }
-        });
-
-        //Script para la fecha de creación
-        document.addEventListener("DOMContentLoaded", function() {
-            let today = new Date().toISOString().split('T')[0];
-            document.getElementById("edit-fecha_inicio").setAttribute("min", today);
         });
     </script>
 

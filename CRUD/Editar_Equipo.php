@@ -14,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($id_equipo) || empty($descripcion) || empty($estado_equipo) || empty($fecha_creacion) || empty($id_proyecto)) {
         $_SESSION['mensaje'] = "Todos los campos son obligatorios.";
         $_SESSION['tipo_mensaje'] = "danger";
-        header("Location: ../Lider/Dashboard_equipo.php");
+        header("Location: ../Admin/Dashboard_equipo.php");
         exit();
     }
 
@@ -31,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (count($miembros) > 3) {
         $_SESSION['mensaje'] = "Puedes seleccionar un máximo de 3 miembros.";
         $_SESSION['tipo_mensaje'] = "danger";
-        header("Location: ../Lider/Dashboard_equipo.php");
+        header("Location: ../Admin/Dashboard_equipo.php");
         exit();
     }
 
@@ -62,18 +62,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 
-    if (mysqli_query($conexion, $sqlUpdate)) {
-        $_SESSION['mensaje'] = "Equipo actualizado correctamente";
-        $_SESSION['tipo_mensaje'] = "success";
-        $_SESSION['tipo_accion'] = "edit";
-    } else {
-        $_SESSION['mensaje'] = "Error al actualizar el Equipo";
-        $_SESSION['tipo_mensaje'] = "danger";
-        $_SESSION['tipo_accion'] = "edit";
-    }
+    $_SESSION['mensaje'] = "Equipo actualizado correctamente.";
+    $_SESSION['tipo_mensaje'] = "success";
 
+    // Cerrar conexión y redirigir
     mysqli_close($conexion);
-    header("Location: ../Lider/Dashboard_Equipo.php");
+    header("Location: ../Admin/Dashboard_equipo.php");
     exit();
 }
-?>

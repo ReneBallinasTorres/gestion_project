@@ -1,6 +1,6 @@
 <?php
-session_start();
 include '../connection/connection.php'; // Conexión a la base de datos
+session_start();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $correo = mysqli_real_escape_string($conexion, $_POST['correo']);
@@ -13,9 +13,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($resultado && mysqli_num_rows($resultado) > 0) {
         $usuario = mysqli_fetch_assoc($resultado);
 
-        // Verificación de contraseña (si está hasheada, usa password_verify)
+        // Verificación de contraseña
         if ($pass === $usuario['pass']) { // O usa password_verify($password, $usuario['pass']) si las contraseñas están encriptadas
-            $_SESSION['usuarios'] = $usuario['id_usuario']; // Guardar el ID en sesión
+            $_SESSION['id_usuario'] = $usuario['id_usuario']; // Guardar el ID en sesión
             $_SESSION['rol'] = $usuario['id_rol']; // Guardar el rol del usuario en sesión
 
             // Redirigir al dashboard según el rol
@@ -34,6 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 mysqli_close($conexion);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 

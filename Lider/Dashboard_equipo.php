@@ -1,9 +1,9 @@
 <?php
-session_start();
 include '../connection/connection.php'; // Conexión a la BD
+session_start();
 
 // Verifica si el usuario ha iniciado sesión
-if (!isset($_SESSION['usuarios'])) {
+if (!isset($_SESSION['id_usuario'])) {
     echo '<script> 
             alert("Por favor, inicia sesión");
             window.location="../components/Login_Lider.php";
@@ -13,14 +13,14 @@ if (!isset($_SESSION['usuarios'])) {
 }
 
 // Obtiene el ID del usuario desde la sesión
-$id = $_SESSION['usuarios'];
+$id = $_SESSION['id_usuario'];
 
-// Consulta para verificar si el usuario tiene rol de lider (id_rol = 2)
+// Consulta para verificar si el usuario tiene rol de Lider (id_rol = 2)
 $consulta = "SELECT * FROM usuarios WHERE id_usuario = '$id' AND id_rol = 2";
 $resultado = mysqli_query($conexion, $consulta);
 $Lider = mysqli_fetch_assoc($resultado);
 
-// Si el usuario no es Lider, redirigirlo
+// Si el usuario no es admin, redirigirlo
 if (!$Lider) {
     echo '<script>
             alert("Acceso denegado. No tienes permisos de Lider.");
@@ -35,36 +35,59 @@ mysqli_close($conexion);
 ?>
 
 <?php
-/*Consultas para invocar datos de BD y Mostarlos (Aqui seran tosdas las invocaciopnes, consultas, etc.
-    Para que no choque con los permisos y validaciones de acceso que estan arriba)*/
 include '../connection/connection.php';
-$query = "SELECT equipos.*, GROUP_CONCAT(usuarios.n_usuario SEPARATOR ', ') AS miembros
-            FROM equipos LEFT JOIN detalle_equipos ON equipos.id_equipo = detalle_equipos.id_equipo
-            LEFT JOIN usuarios ON detalle_equipos.id_usuario = usuarios.id_usuario
-            GROUP BY equipos.id_equipo";
-$resultado_equipos = mysqli_query($conexion, $query);
+// Obtener los proyectos creados por el líder
+$query = "SELECT p.id_proyecto FROM proyectos p
+        JOIN usuarios u ON u.id_usuario = p.id_usuario WHERE u.id_rol = 2 AND u.id_usuario = '$id'";
 
-// Consulta para obtener los datos de docente_tutor y tutor
-$query1 = "SELECT id_proyecto, n_proyecto FROM proyectos";
+$resultado_proyectos = mysqli_query($conexion, $query);
+
+// Guardar los ID de los proyectos en un array
+$proyectos_lider = [];
+while ($row = mysqli_fetch_assoc($resultado_proyectos)) {
+    $proyectos_lider[] = $row['id_proyecto'];
+}
+
+if (!empty($proyectos_lider)) {
+    $proyectos_lider_list = implode(',', $proyectos_lider);
+
+    // Consulta para obtener los equipos creados por el líder junto con el nombre del proyecto
+    $query_equipos = "SELECT e.*, p.n_proyecto, GROUP_CONCAT(u.n_usuario SEPARATOR ', ') AS miembros
+                FROM equipos e LEFT JOIN detalle_equipos de ON e.id_equipo = de.id_equipo
+                LEFT JOIN usuarios u ON de.id_usuario = u.id_usuario LEFT JOIN proyectos p ON e.id_proyecto = p.id_proyecto
+                WHERE e.id_usuario = '$id' GROUP BY e.id_equipo, p.n_proyecto";
+
+    $resultado_equipos = mysqli_query($conexion, $query_equipos);
+}
+
+// Consulta para obtener los datos de proyectos
+$query1 = "SELECT id_proyecto, n_proyecto FROM proyectos WHERE id_usuario = '$id'";
 $result1 = $conexion->query($query1);
 
-$query2 = "SELECT id_proyecto, n_proyecto FROM proyectos";
+$query2 = "SELECT id_proyecto, n_proyecto FROM proyectos WHERE id_usuario = '$id'";
 $result2 = $conexion->query($query2);
 
 
 // Consulta para obtener los equipos, filtrando si hay un término de búsqueda
+// Inicializamos la variable de búsqueda
 $search = "";
 if (isset($_GET['search']) && !empty($_GET['search'])) {
-    $search = mysqli_real_escape_string($conexion, $_GET['search']);
-    $query = "SELECT proyectos.* 
-            FROM proyectos
-            WHERE proyectos.n_proyecto LIKE '%$search%' 
-            OR proyectos.descripcion LIKE '%$search%' 
-            OR proyectos.objetivos LIKE '%$search%' 
-            OR proyectos.fecha_inicio LIKE '%$search%' 
-            OR proyectos.fecha_fin LIKE '%$search%'";
+    $search = "%" . mysqli_real_escape_string($conexion, $_GET['search']) . "%";
+
+    // Preparamos la consulta para evitar inyecciones SQL
+    $query = "SELECT equipos.* FROM equipos
+            WHERE equipos.fecha_creacion LIKE ? OR equipos.descripcion LIKE ? 
+            OR equipos.estado_equipo LIKE ? OR equipos.id_proyecto LIKE ?";
+
+    // Preparamos y vinculamos los parámetros
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("ssss", $search, $search, $search, $search);
+    $stmt->execute();
+    $result = $stmt->get_result();
 } else {
-    $query = "SELECT proyectos.* FROM proyectos";
+    // Si no hay término de búsqueda, obtenemos todos los equipos
+    $query = "SELECT equipos.* FROM equipos";
+    $result = $conexion->query($query);
 }
 ?>
 
@@ -101,7 +124,7 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <div class="container-fluid">
-                <h4 class="me-auto"><b>Dashboard</b></h4>
+                <h4 class="me-auto"><b>Creación de Equipos</b></h4>
                 <div class="d-flex align-items-center">
                     <span class="me-3"><i class="fas fa-bell"></i> <b>Notificaciones</b></span>
                     <span class="me-3"><i class="fas fa-user"></i> <b><?php echo $Lider['n_usuario']; ?> <?php echo $Lider['a_p']; ?> <?php echo $Lider['a_m']; ?></b></span>
@@ -138,7 +161,7 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
                             <td><?php echo $equipos['fecha_creacion']; ?></td>
                             <td><?php echo $equipos['descripcion']; ?></td>
                             <td><?php echo $equipos['estado_equipo']; ?></td>
-                            <td><?php echo $equipos['id_proyecto']; ?></td>
+                            <td><?php echo $equipos['n_proyecto']; ?></td>
                             <td><?php echo $equipos['miembros']; ?></td> <!-- Aquí se muestran los miembros -->
                             <td>
                                 <button class="btn btn-warning btn-sm" style="margin-bottom: 5px;"
@@ -151,7 +174,7 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
                                             '<?php echo $equipos['miembros']; ?>')">
                                     Editar
                                 </button>
-                                <button class="btn btn-danger btn-sm" onclick="showDeleteModal(<?php echo $proyecto['id_equipo']; ?>)">
+                                <button class="btn btn-danger btn-sm" onclick="showDeleteModal(<?php echo $equipos['id_equipo']; ?>)">
                                     Eliminar
                                 </button>
                             </td>
@@ -167,23 +190,21 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Crear Proyecto</h5>
+                    <h5 class="modal-title">Crear Equipo</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Mostrar el mensaje -->
-                    <?php if (isset($_SESSION['mensaje'])): ?>
+                    <!-- Mensaje de alerta -->
+                    <?php if (isset($_SESSION['tipo_accion']) && $_SESSION['tipo_accion'] === 'create'): ?>
                         <div id="alerta-mensaje" class="alert alert-<?php echo $_SESSION['tipo_mensaje']; ?> alert-dismissible fade show" role="alert">
                             <?php echo $_SESSION['mensaje']; ?>
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
-                        <?php unset($_SESSION['mensaje']);
-                        unset($_SESSION['tipo_mensaje']); ?>
                     <?php endif; ?>
                     <form id="createForm" method="POST" action="../Lider_CRUD/Craer_Equipo.php">
                         <div class="mb-3">
                             <label class="form-label">Fecha de Creación</label>
-                            <input type="date" class="form-control" name="fecha_creacion" min="<?= date('Y-m-d'); ?>" required>
+                            <input type="date" class="form-control" name="fecha_creacion" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Descripción</label>
@@ -192,9 +213,9 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
                         <div class="mb-3">
                             <label class="form-label">Estado del Equipo</label>
                             <select class="form-select" name="estado_equipo">
-                                <option value="activo">Activo</option>
-                                <option value="pausa">En Pausa</option>
-                                <option value="finalizado">Finalizado</option>
+                                <option value="Activo">Activo</option>
+                                <option value="En Pausa">En Pausa</option>
+                                <option value="Finalizado">Finalizado</option>
                             </select>
                         </div>
                         <div class="mb-3">
@@ -210,9 +231,26 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
                                 ?>
                             </select>
                         </div>
-                        <div class="mb-3">
+                        <!-- <div class="mb-3">
                             <label class="form-label">Miembros del equipo</label>
-                            <select name="miembros[]" class="form-select" multiple size="5" required>
+                            <div class="form-check">
+                                <!?php
+                                $queryUsuarios = "SELECT id_usuario, n_usuario FROM usuarios WHERE id_rol = 3";
+                                $resultUsuarios = $conexion->query($queryUsuarios);
+                                while ($row = $resultUsuarios->fetch_assoc()) {
+                                    echo "<div class='form-check'>
+                                        <input class='form-check-input' type='checkbox' name='miembros[]' value='{$row['id_usuario']}' id='miembro{$row['id_usuario']}'>
+                                        <label class='form-check-label' for='miembro{$row['id_usuario']}'>
+                                            {$row['n_usuario']}
+                                        </label>
+                                    </div>";
+                                }
+                                ?>
+                            </div>
+                        </div> -->
+                        <div class="mb-3">
+                            <label class="form-label">Miembros del equipo (Ctrl + Click para seleccionar múltiples)</label>
+                            <select name="miembros[]" class="form-select" multiple size="3" required>
                                 <?php
                                 $queryUsuarios = "SELECT id_usuario, n_usuario FROM usuarios WHERE id_rol = 3"; // Suponiendo que id_rol=3 son miembros
                                 $resultUsuarios = $conexion->query($queryUsuarios);
@@ -238,20 +276,18 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Mostrar el mensaje -->
-                    <?php if (isset($_SESSION['mensaje'])): ?>
+                    <!-- Mensaje de alerta -->
+                    <?php if (isset($_SESSION['tipo_accion']) && $_SESSION['tipo_accion'] === 'edit'): ?>
                         <div id="alerta-mensaje" class="alert alert-<?php echo $_SESSION['tipo_mensaje']; ?> alert-dismissible fade show" role="alert">
                             <?php echo $_SESSION['mensaje']; ?>
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
-                        <?php unset($_SESSION['mensaje']);
-                        unset($_SESSION['tipo_mensaje']); ?>
                     <?php endif; ?>
                     <form id="editForm" method="POST" action="../Lider_CRUD/Editar_Equipo.php">
-                        <input type="hidden" name="id_proyecto" id="edit-id">
+                        <input type="hidden" name="id_equipo" id="edit-id">
                         <div class="mb-3">
                             <label class="form-label">Fecha de Creación</label>
-                            <input type="date" class="form-control" name="fecha_creacion" id="edit-fecha_creacion" min="<?= date('Y-m-d'); ?>" required>
+                            <input type="date" class="form-control" name="fecha_creacion" id="edit-fecha_creacion" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Descripción</label>
@@ -259,10 +295,10 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Estado del Equipo</label>
-                            <select class="form-select" name="estado_equipo" id="edit-estado_equipo">
-                                <option value="activo">Activo</option>
-                                <option value="pausa">En Pausa</option>
-                                <option value="finalizado">Finalizado</option>
+                            <select class="form-select" name="estado_equipo" id="edit-estado_equipo" required>
+                                <option value="Activo">Activo</option>
+                                <option value="En Pausa">En Pausa</option>
+                                <option value="Finalizado">Finalizado</option>
                             </select>
                         </div>
                         <div class="mb-3">
@@ -270,10 +306,22 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
                             <select name="proyecto" class="form-select" id="edit-proyecto" required>
                                 <option selected>Escoge un Proyecto</option>
                                 <?php
-                                if ($result1->num_rows > 0) {
-                                    while ($row = $result1->fetch_assoc()) {
+                                if ($result2->num_rows > 0) {
+                                    while ($row = $result2->fetch_assoc()) {
                                         echo "<option value='" . $row['id_proyecto'] . "'>" . $row['n_proyecto'] . "</option>";
                                     }
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Miembros del equipo (Ctrl + Click para seleccionar múltiples)</label>
+                            <select name="miembros[]" class="form-select" multiple size="4" id="edit-miembros">
+                                <?php
+                                $queryUsuarios = "SELECT id_usuario, n_usuario FROM usuarios WHERE id_rol = 3"; // Suponiendo que id_rol=3 son miembros
+                                $resultUsuarios = $conexion->query($queryUsuarios);
+                                while ($row = $resultUsuarios->fetch_assoc()) {
+                                    echo "<option value='{$row['id_usuario']}'>{$row['n_usuario']}</option>";
                                 }
                                 ?>
                             </select>
@@ -285,20 +333,37 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
         </div>
     </div>
 
-    <!-- Modal de Confirmación -->
-    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+        <!-- Modal de Confirmación de Eliminación -->
+        <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmación de Eliminación</h5>
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    ¿Estás seguro de que deseas eliminar este Equipo? Esta acción no se puede deshacer.
+                    ¿Estás seguro de que deseas eliminar este equipo? Esta acción no se puede deshacer.
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <a id="confirmDeleteBtn" href="#" class="btn btn-danger">Eliminar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal de Mensajes de Eliminación-->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="successModalLabel">Eliminación Exitosa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    ¡El equipo ha sido eliminado exitosamente!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Aceptar</button>
                 </div>
             </div>
         </div>
@@ -314,52 +379,79 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
             createModal.show();
         }
 
-        //Script de Modal de Edición
-        function editUser(id, fecha_creacion, descripcion, estado_equipo, proyecto) {
-            // Rellenar el modal con los datos del proyecto
+        //Script de Modal de editar
+        function editUser(id, fecha_creacion, descripcion, estado_equipo, proyecto, miembros) {
             document.getElementById('edit-id').value = id;
             document.getElementById('edit-fecha_creacion').value = fecha_creacion;
             document.getElementById('edit-descripcion').value = descripcion;
-            document.getElementById('edit-estado_equipo').value = estado_equipo;
-            document.getElementById('edit-proyecto').value = proyecto;
+
+            // Seleccionar el estado del equipo
+            let estadoSelect = document.getElementById('edit-estado_equipo');
+            for (let option of estadoSelect.options) {
+                if (option.value === estado_equipo) {
+                    option.selected = true;
+                    break;
+                }
+            }
+
+            // Seleccionar el proyecto
+            let proyectoSelect = document.getElementById('edit-proyecto');
+            for (let option of proyectoSelect.options) {
+                if (option.value === proyecto) {
+                    option.selected = true;
+                    break;
+                }
+            }
+
+            // Seleccionar múltiples miembros
+            let miembrosSelect = document.getElementById('edit-miembros');
+            let miembrosArray = miembros.split(','); // Suponiendo que miembros es una lista separada por comas
+            for (let option of miembrosSelect.options) {
+                option.selected = miembrosArray.includes(option.value);
+            }
+
+            document.getElementById('edit-miembros').addEventListener('change', function() {
+                let selectedOptions = this.selectedOptions;
+                if (selectedOptions.length > 3) {
+                    alert('Puedes seleccionar un máximo de 3 miembros.');
+                    // Desmarcar el último miembro seleccionado
+                    this.options[selectedOptions[selectedOptions.length - 1].index].selected = false;
+                }
+            });
 
             // Mostrar el modal
             const editModal = new bootstrap.Modal(document.getElementById('editModal'));
             editModal.show();
         }
 
-        //Script de eliminación de equipo
-        function showDeleteModal(id_equipo) {
-            // Establece el enlace de confirmación para eliminar el usuario
-            var confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-            confirmDeleteBtn.href = '../Lider_CRUD/Eliminar_Equipo.php?id_equipo=' + id_equipo;
-
-            // Muestra el modal de confirmación
-            var deleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
-            deleteModal.show();
-        }
-
         //Script de tiempo de visualización del mensaje del formulario
         document.addEventListener("DOMContentLoaded", function() {
             let alert = document.getElementById('alerta-mensaje');
+            let tipoAccion = '<?php echo isset($_SESSION['tipo_accion']) ? $_SESSION['tipo_accion'] : ''; ?>'; // Obtenemos el tipo de acción desde la sesión
 
-            // Mostrar el modal solo si existe la alerta (es decir, si hay un mensaje en sesión)
+            // Si existe un mensaje
             if (alert) {
-                const modal = new bootstrap.Modal(document.getElementById('createModal'));
-                modal.show();
+                // Mostrar el modal adecuado según el tipo de acción
+                if (tipoAccion === 'create') {
+                    const modalCreate = new bootstrap.Modal(document.getElementById('createModal'));
+                    modalCreate.show();
+                } else if (tipoAccion === 'edit') {
+                    const modalEdit = new bootstrap.Modal(document.getElementById('editModal'));
+                    modalEdit.show();
+                }
 
                 // Desaparecer la alerta después de 3 segundos
                 setTimeout(function() {
                     let bsAlert = new bootstrap.Alert(alert);
                     bsAlert.close();
-                }, 2200);
+                }, 2050);
+                <?php
+                // Limpiar la sesión después de mostrar el modal
+                unset($_SESSION['tipo_accion']);
+                unset($_SESSION['tipo_mensaje']);
+                unset($_SESSION['mensaje']);
+                ?>
             }
-        });
-
-        //Script para la fecha de creación
-        document.addEventListener("DOMContentLoaded", function() {
-            let today = new Date().toISOString().split('T')[0];
-            document.getElementById("edit-fecha_inicio").setAttribute("min", today);
         });
 
         //Script para seleecionar solo 3 operarios por equipo
@@ -374,6 +466,24 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
                     selectedOptions.forEach(option => option.selected = false); // Desselecciona todos
                 }
             });
+        });
+
+        //Script de eliminación de proyecto
+        function showDeleteModal(id_equipo) {
+            const deleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+            document.getElementById('confirmDeleteBtn').href = `../Lider_CRUD/Eliminar_Equipo.php?id_equipo=${id_equipo}`;
+            deleteModal.show();
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            let eliminado = '<?php echo isset($_SESSION['eliminado']) ? $_SESSION['eliminado'] : ''; ?>';
+
+            if (eliminado === '1') {
+                const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                successModal.show();
+            }
+
+            <?php unset($_SESSION['eliminado']); ?>
         });
     </script>
 </body>

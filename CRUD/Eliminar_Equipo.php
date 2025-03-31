@@ -22,7 +22,7 @@ if (isset($_GET['id_equipo'])) {
 }
 
 // Redirigir a la página de administración de equipos
-header("Location: ../Lider/Dashboard_equipo.php");
+header("Location: ../Admin/Dashboard_equipo.php");
 exit();
 
 // Cerrar la conexión

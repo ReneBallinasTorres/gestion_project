@@ -2,25 +2,25 @@
 <html lang="es">
 
 <head>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Proyectos</title>
-
 </head>
 
 <style>
-    html, body {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
+    html,
+    body {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
 
-.content {
-    flex: 1; /* Empuja el footer hacia abajo */
-}
-
+    .content {
+        flex: 1;
+        /* Empuja el footer hacia abajo */
+    }
 </style>
+
 <body>
     <!-- Footer -->
     <footer class="bg-dark text-white py-5 mt-auto">
@@ -39,7 +39,6 @@
                         <li><a href="Index.php" class="text-white text-decoration-none">Inicio</a></li>
                         <li><a href="Information/Sobre_Nosotros.php" class="text-white text-decoration-none">Sobre Nosotros</a></li>
                         <li><a href="Information/Contacto.php" class="text-white text-decoration-none">Contacto</a></li>
-                        <!-- <li><a href="/projects.php" class="text-white text-decoration-none">Proyectos</a></li> -->
                     </ul>
                 </div>
 

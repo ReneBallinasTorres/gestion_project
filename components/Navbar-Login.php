@@ -23,7 +23,6 @@
             </ul>
             <div class="d-flex">
                 <a href="../components/Opcion_Login.php" class="btn btn-outline-light me-2">Iniciar Sesión</a>
-                <!-- <a href="register.php" class="btn btn-primary">Registrarse</a> -->
             </div>
         </div>
     </div>

@@ -32,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (mysqli_query($conexion, $sql)) {
         $_SESSION['mensaje'] = "Proyecto creado exitosamente.";
         $_SESSION['tipo_mensaje'] = "success"; // mensaje de color verde
-        header("Location: ../admin/Dashboard_proyecto.php");
+        $_SESSION['tipo_accion'] = "create";
         // echo '<script>
         //         alert("Proyecto creado exitosamente.");
         //         window.location="../admin/Dashboard_proyecto.php";
@@ -40,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         $_SESSION['mensaje'] = "Error al crear el Proyecto.";
         $_SESSION['tipo_mensaje'] = "danger"; // mensaje de color rojo
-        header("Location: ../admin/Dashboard_proyecto.php");
+        $_SESSION['tipo_accion'] = "create";
         // echo '<script>
         //         alert("Error al crear el Proyecto.");
         //         window.location="../admin/Dashboard_proyecto.php";
@@ -49,5 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Cerrar conexión
     mysqli_close($conexion);
+    header("Location: ../admin/Dashboard_proyecto.php");
+    exit();
 } 
 ?>

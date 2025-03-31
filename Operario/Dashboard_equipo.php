@@ -3,7 +3,7 @@ session_start();
 include '../connection/connection.php'; // Conexión a la BD
 
 // Verifica si el usuario ha iniciado sesión
-if (!isset($_SESSION['usuarios'])) {
+if (!isset($_SESSION['id_ciudadano'])) {
     echo '<script> 
             alert("Por favor, inicia sesión");
             window.location="../components/Login_Operario.php";
