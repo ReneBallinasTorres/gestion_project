@@ -52,12 +52,21 @@ if (!empty($proyectos_lider)) {
     $proyectos_lider_list = implode(',', $proyectos_lider);
 
     // Consulta para obtener los equipos creados por el líder junto con el nombre del proyecto
-    $query_equipos = "SELECT e.*, p.n_proyecto, GROUP_CONCAT(u.n_usuario SEPARATOR ', ') AS miembros
-                FROM equipos e LEFT JOIN detalle_equipos de ON e.id_equipo = de.id_equipo
-                LEFT JOIN usuarios u ON de.id_usuario = u.id_usuario LEFT JOIN proyectos p ON e.id_proyecto = p.id_proyecto
-                WHERE e.id_usuario = '$id' GROUP BY e.id_equipo, p.n_proyecto";
-
-    $resultado_equipos = mysqli_query($conexion, $query_equipos);
+    $query_actividades = "SELECT 
+        ap.id_actividad_proyecto, 
+        ap.n_actividad, 
+        ap.descripcion, 
+        ap.fecha_inicio, 
+        ap.fecha_fin, 
+        ap.horas_estimadas, 
+        ap.horas_utilizadas, 
+        p.n_proyecto AS nombre_proyecto, 
+        u.n_usuario AS nombre_responsable
+    FROM actividades_proyecto ap
+    JOIN proyectos p ON ap.id_proyecto = p.id_proyecto
+    JOIN usuarios u ON ap.id_usuario = u.id_usuario
+    WHERE p.id_usuario = '$id'"; // Solo obtiene actividades de proyectos del líder
+    $resultado_actividad = mysqli_query($conexion, $query_actividades);
 }
 
 // Consulta para obtener los datos de proyectos
@@ -124,7 +133,7 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <div class="container-fluid">
-                <h4 class="me-auto"><b>Creación de Equipos</b></h4>
+                <h4 class="me-auto"><b>Creación de Actividades</b></h4>
                 <div class="d-flex align-items-center">
                     <span class="me-3"><i class="fas fa-bell"></i> <b>Notificaciones</b></span>
                     <span class="me-3"><i class="fas fa-user"></i> <b><?php echo $Lider['n_usuario']; ?> <?php echo $Lider['a_p']; ?> <?php echo $Lider['a_m']; ?></b></span>
@@ -136,7 +145,7 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
         <!-- Formulario y Tabla -->
         <div class="container mt-4">
             <div class="d-flex justify-content-between mb-3">
-                <button class="btn btn-primary" onclick="openCreateModal()">Crear Nuevo Equipo</button>
+                <button class="btn btn-primary" onclick="openCreateModal()">Crear Nueva Actividad</button>
                 <form class="d-flex" method="GET">
                     <input class="form-control me-2" type="search" placeholder="Buscar usuario" name="search">
                     <button class="btn btn-outline-success" type="submit">Buscar</button>
@@ -145,36 +154,43 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
             <table class="table table-striped">
                 <thead class="table-dark">
                     <tr>
-                        <th>ID Equipo</th>
-                        <th>Fecha de Creación</th>
+                        <th>Actividad</th>
                         <th>Descripción</th>
-                        <th>Estado Equipo</th>
-                        <th>Proyecto designado</th>
-                        <th>Miembros</th>
+                        <th>Fecha Inicio</th>
+                        <th>Fecha Fin</th>
+                        <th>Horas Diarias</th>
+                        <th>Horas Utilizadas</th>
+                        <th>Proyecto</th>
+                        <th>Responsable</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php while ($equipos = mysqli_fetch_assoc($resultado_equipos)) : ?>
+                    <?php while ($actividad = mysqli_fetch_assoc($resultado_actividad)) : ?>
                         <tr>
-                            <td><?php echo $equipos['id_equipo']; ?></td>
-                            <td><?php echo $equipos['fecha_creacion']; ?></td>
-                            <td><?php echo $equipos['descripcion']; ?></td>
-                            <td><?php echo $equipos['estado_equipo']; ?></td>
-                            <td><?php echo $equipos['n_proyecto']; ?></td>
-                            <td><?php echo $equipos['miembros']; ?></td> <!-- Aquí se muestran los miembros -->
+                            <td><?php echo $actividad['n_actividad']; ?></td>
+                            <td><?php echo $actividad['descripcion']; ?></td>
+                            <td><?php echo $actividad['fecha_inicio']; ?></td>
+                            <td><?php echo $actividad['fecha_fin']; ?></td>
+                            <td><?php echo $actividad['horas_estimadas']; ?></td>
+                            <td><?php echo $actividad['horas_utilizadas']; ?></td>
+                            <td><?php echo $actividad['nombre_proyecto']; ?></td>
+                            <td><?php echo $actividad['nombre_responsable']; ?></td>
                             <td>
                                 <button class="btn btn-warning btn-sm" style="margin-bottom: 5px;"
                                     onclick="editUser(
-                                            '<?php echo $equipos['id_equipo']; ?>', 
-                                            '<?php echo $equipos['fecha_creacion']; ?>', 
-                                            '<?php echo $equipos['descripcion']; ?>', 
-                                            '<?php echo $equipos['estado_equipo']; ?>', 
-                                            '<?php echo $equipos['id_proyecto']; ?>',
-                                            '<?php echo $equipos['miembros']; ?>')">
+                                            '<?php echo $actividad['id_actividad_proyecto']; ?>', 
+                                            '<?php echo $actividad['n_actividad']; ?>', 
+                                            '<?php echo $actividad['descripcion']; ?>', 
+                                            '<?php echo $actividad['fecha_inicio']; ?>', 
+                                            '<?php echo $actividad['fecha_fin']; ?>',
+                                            '<?php echo $actividad['horas_estimadas']; ?>',
+                                            '<?php echo $actividad['horas_utilizadas']; ?>',
+                                            '<?php echo $actividad['id_proyecto']; ?>',
+                                            '<?php echo $actividad['id_usuario']; ?>')">
                                     Editar
                                 </button>
-                                <button class="btn btn-danger btn-sm" onclick="showDeleteModal(<?php echo $equipos['id_equipo']; ?>)">
+                                <button class="btn btn-danger btn-sm" onclick="showDeleteModal(<?php echo $actividad['id_actividad_proyecto']; ?>)">
                                     Eliminar
                                 </button>
                             </td>
@@ -185,12 +201,12 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
         </div>
     </div>
 
-    <!-- Modal para crear Equipo -->
+    <!-- Modal para crear Actividad -->
     <div class="modal fade" id="createModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Crear Equipo</h5>
+                    <h5 class="modal-title">Crear Actividad</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -201,32 +217,36 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     <?php endif; ?>
-                    <form id="createForm" method="POST" action="../Lider_CRUD/Craer_Equipo.php">
+                    <form id="createForm" method="POST" action="../Lider_CRUD/Craer_Actividad.php">
                         <div class="mb-3">
-                            <label class="form-label">Fecha de Creación</label>
-                            <input type="date" class="form-control" name="fecha_creacion" value="<?= date('Y-m-d'); ?>" required>
+                            <label class="form-label">Actividad</label>
+                            <input type="text" class="form-control" name="n_actividad" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Descripción</label>
                             <input type="text" class="form-control" name="descripcion" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Estado del Equipo</label>
-                            <select class="form-select" name="estado_equipo">
-                                <option value="Activo">Activo</option>
-                                <option value="En Pausa">En Pausa</option>
-                                <option value="Finalizado">Finalizado</option>
-                            </select>
+                            <label class="form-label">Fecha de Creación</label>
+                            <input type="date" class="form-control" name="fecha_inicio" value="<?= date('Y-m-d'); ?>" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Fecha de Finalización</label>
+                            <input type="date" class="form-control" name="fecha_fin" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Horas Diarias</label>
+                            <input type="number" class="form-control" name="horas_estimadas" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Horas Utilizadas</label>
+                            <input type="number" class="form-control" name="horas_utilizadas" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Proyecto</label>
-                            <select name="proyecto" class="form-select" required>
+                            <select name="proyecto" class="form-select" required id="selectProyecto" onchange="cargarResponsables()">
                                 <option selected>Escoge un Proyecto</option>
                                 <?php
-                                // Consulta para obtener solo los proyectos que no han sido asignados a un equipo
-                                $queryProyectos = "SELECT id_proyecto, n_proyecto FROM proyectos 
-                                                    WHERE id_proyecto NOT IN (SELECT id_proyecto FROM equipos)";
-                                $result1 = $conexion->query($queryProyectos);
                                 if ($result1->num_rows > 0) {
                                     while ($row = $result1->fetch_assoc()) {
                                         echo "<option value='" . $row['id_proyecto'] . "'>" . $row['n_proyecto'] . "</option>";
@@ -235,36 +255,13 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
                                 ?>
                             </select>
                         </div>
-                        <!-- <div class="mb-3">
-                            <label class="form-label">Miembros del equipo</label>
-                            <div class="form-check">
-                                <!?php
-                                $queryUsuarios = "SELECT id_usuario, n_usuario FROM usuarios WHERE id_rol = 3";
-                                $resultUsuarios = $conexion->query($queryUsuarios);
-                                while ($row = $resultUsuarios->fetch_assoc()) {
-                                    echo "<div class='form-check'>
-                                        <input class='form-check-input' type='checkbox' name='miembros[]' value='{$row['id_usuario']}' id='miembro{$row['id_usuario']}'>
-                                        <label class='form-check-label' for='miembro{$row['id_usuario']}'>
-                                            {$row['n_usuario']}
-                                        </label>
-                                    </div>";
-                                }
-                                ?>
-                            </div>
-                        </div> -->
                         <div class="mb-3">
-                            <label class="form-label">Miembros del equipo (Ctrl + Click para seleccionar múltiples)</label>
-                            <select name="miembros[]" class="form-select" multiple size="3" required>
-                                <?php
-                                $queryUsuarios = "SELECT id_usuario, n_usuario FROM usuarios WHERE id_rol = 3"; // Suponiendo que id_rol=3 son miembros
-                                $resultUsuarios = $conexion->query($queryUsuarios);
-                                while ($row = $resultUsuarios->fetch_assoc()) {
-                                    echo "<option value='{$row['id_usuario']}'>{$row['n_usuario']}</option>";
-                                }
-                                ?>
+                            <label class="form-label">Responsable</label>
+                            <select name="responsable" class="form-select" required id="selectResponsable">
+                                <option selected>Escoge un Responsable</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-success">Crear Equipo</button>
+                        <button type="submit" class="btn btn-success">Crear Actividad</button>
                     </form>
                 </div>
             </div>
@@ -287,31 +284,39 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     <?php endif; ?>
-                    <form id="editForm" method="POST" action="../Lider_CRUD/Editar_Equipo.php">
-                        <input type="hidden" name="id_equipo" id="edit-id">
+                    <form id="createForm" method="POST" action="../Lider_CRUD/Craer_Equipo.php">
+                        <input type="hidden" name="id_actividad_proyecto" id="edit-id">
                         <div class="mb-3">
-                            <label class="form-label">Fecha de Creación</label>
-                            <input type="date" class="form-control" name="fecha_creacion" id="edit-fecha_creacion" required>
+                            <label class="form-label">Actividad</label>
+                            <input type="text" class="form-control" name="n_actividad" id="edit-n_actividad" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Descripción</label>
                             <input type="text" class="form-control" name="descripcion" id="edit-descripcion" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Estado del Equipo</label>
-                            <select class="form-select" name="estado_equipo" id="edit-estado_equipo" required>
-                                <option value="Activo">Activo</option>
-                                <option value="En Pausa">En Pausa</option>
-                                <option value="Finalizado">Finalizado</option>
-                            </select>
+                            <label class="form-label">Fecha de Creación</label>
+                            <input type="date" class="form-control" name="fecha_inicio" id="edit-fecha_inicio" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Fecha de Finalización</label>
+                            <input type="date" class="form-control" name="fecha_fin" id="edit-fecha_fin" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Horas Diarias</label>
+                            <input type="number" class="form-control" name="horas_estimadas" id="edit-horas_estimadas" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Horas Utilizadas</label>
+                            <input type="number" class="form-control" name="horas_utilizadas" id="edit-horas_utilizadas" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Proyecto</label>
                             <select name="proyecto" class="form-select" id="edit-proyecto" required>
                                 <option selected>Escoge un Proyecto</option>
                                 <?php
-                                if ($result2->num_rows > 0) {
-                                    while ($row = $result2->fetch_assoc()) {
+                                if ($result1->num_rows > 0) {
+                                    while ($row = $result1->fetch_assoc()) {
                                         echo "<option value='" . $row['id_proyecto'] . "'>" . $row['n_proyecto'] . "</option>";
                                     }
                                 }
@@ -319,18 +324,19 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Miembros del equipo (Ctrl + Click para seleccionar múltiples)</label>
-                            <select name="miembros[]" class="form-select" multiple size="4" id="edit-miembros">
+                            <label class="form-label">Responsable</label>
+                            <select name="responsable" class="form-select" id="edit-responsable" required>
+                                <option selected>Escoge un Reponsable</option>
                                 <?php
-                                $queryUsuarios = "SELECT id_usuario, n_usuario FROM usuarios WHERE id_rol = 3"; // Suponiendo que id_rol=3 son miembros
-                                $resultUsuarios = $conexion->query($queryUsuarios);
-                                while ($row = $resultUsuarios->fetch_assoc()) {
-                                    echo "<option value='{$row['id_usuario']}'>{$row['n_usuario']}</option>";
+                                if ($result1->num_rows > 0) {
+                                    while ($row = $result1->fetch_assoc()) {
+                                        echo "<option value='" . $row['id_proyecto'] . "'>" . $row['n_proyecto'] . "</option>";
+                                    }
                                 }
                                 ?>
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-success">Actualizar Equipo</button>
+                        <button type="submit" class="btn btn-success">Actualizar Actividad</button>
                     </form>
                 </div>
             </div>
@@ -346,7 +352,7 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    ¿Estás seguro de que deseas eliminar este equipo? Esta acción no se puede deshacer.
+                    ¿Estás seguro de que deseas eliminar esta actividad? Esta acción no se puede deshacer.
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -364,7 +370,7 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    ¡El equipo ha sido eliminado exitosamente!
+                    ¡La actividad ha sido eliminado exitosamente!
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-success" data-bs-dismiss="modal">Aceptar</button>
@@ -384,49 +390,39 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
         }
 
         //Script de Modal de editar
-        function editUser(id, fecha_creacion, descripcion, estado_equipo, proyecto, miembros) {
+        function editUser(id, n_actividad, descripcion, fecha_inicio, fecha_fin, horas_estimadas, horas_utilizadas, id_proyecto, id_usuario) {
+            // Asignar valores a los campos del formulario de edición
             document.getElementById('edit-id').value = id;
-            document.getElementById('edit-fecha_creacion').value = fecha_creacion;
+            document.getElementById('edit-n_actividad').value = n_actividad;
             document.getElementById('edit-descripcion').value = descripcion;
-
-            // Seleccionar el estado del equipo
-            let estadoSelect = document.getElementById('edit-estado_equipo');
-            for (let option of estadoSelect.options) {
-                if (option.value === estado_equipo) {
-                    option.selected = true;
-                    break;
-                }
-            }
+            document.getElementById('edit-fecha_inicio').value = fecha_inicio;
+            document.getElementById('edit-fecha_fin').value = fecha_fin;
+            document.getElementById('edit-horas_estimadas').value = horas_estimadas;
+            document.getElementById('edit-horas_utilizadas').value = horas_utilizadas;
 
             // Seleccionar el proyecto
             let proyectoSelect = document.getElementById('edit-proyecto');
             for (let option of proyectoSelect.options) {
-                if (option.value === proyecto) {
+                if (option.value == id_proyecto) {
                     option.selected = true;
                     break;
                 }
             }
 
-            // Seleccionar múltiples miembros
-            let miembrosSelect = document.getElementById('edit-miembros');
-            let miembrosArray = miembros.split(','); // Suponiendo que miembros es una lista separada por comas
-            for (let option of miembrosSelect.options) {
-                option.selected = miembrosArray.includes(option.value);
+            // Seleccionar el responsable
+            let responsableSelect = document.getElementById('edit-responsable');
+            for (let option of responsableSelect.options) {
+                if (option.value == id_usuario) {
+                    option.selected = true;
+                    break;
+                }
             }
 
-            document.getElementById('edit-miembros').addEventListener('change', function() {
-                let selectedOptions = this.selectedOptions;
-                if (selectedOptions.length > 3) {
-                    alert('Puedes seleccionar un máximo de 3 miembros.');
-                    // Desmarcar el último miembro seleccionado
-                    this.options[selectedOptions[selectedOptions.length - 1].index].selected = false;
-                }
-            });
-
-            // Mostrar el modal
+            // Mostrar el modal de edición
             const editModal = new bootstrap.Modal(document.getElementById('editModal'));
             editModal.show();
         }
+
 
         //Script de tiempo de visualización del mensaje del formulario
         document.addEventListener("DOMContentLoaded", function() {
@@ -458,24 +454,10 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
             }
         });
 
-        //Script para seleecionar solo 3 operarios por equipo
-        document.addEventListener("DOMContentLoaded", function() {
-            let selectMiembros = document.querySelector("select[name='miembros[]']");
-
-            selectMiembros.addEventListener("change", function() {
-                let selectedOptions = Array.from(selectMiembros.selectedOptions);
-
-                if (selectedOptions.length > 3) {
-                    alert("Solo puedes seleccionar un máximo de 3 miembros.");
-                    selectedOptions.forEach(option => option.selected = false); // Desselecciona todos
-                }
-            });
-        });
-
         //Script de eliminación de proyecto
-        function showDeleteModal(id_equipo) {
+        function showDeleteModal(id_actividad_proyecto) {
             const deleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
-            document.getElementById('confirmDeleteBtn').href = `../Lider_CRUD/Eliminar_Equipo.php?id_equipo=${id_equipo}`;
+            document.getElementById('confirmDeleteBtn').href = `../Lider_CRUD/Eliminar_Actividad.php?id_actividad_proyecto=${id_actividad_proyecto}`;
             deleteModal.show();
         }
 
@@ -489,6 +471,25 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
 
             <?php unset($_SESSION['eliminado']); ?>
         });
+
+        //Script para escoger un integrante del equipo para cada act por proyecto
+        function cargarResponsables() {
+            var id_proyecto = document.getElementById("selectProyecto").value;
+
+            // Verifica que el usuario haya seleccionado un proyecto válido
+            if (id_proyecto !== "Escoge un Proyecto") {
+                var xhr = new XMLHttpRequest();
+                xhr.open("GET", "obtener_integrantes.php?id_proyecto=" + id_proyecto, true);
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                        document.getElementById("selectResponsable").innerHTML = xhr.responseText;
+                    }
+                };
+                xhr.send();
+            } else {
+                document.getElementById("selectResponsable").innerHTML = "<option selected>Escoge un Responsable</option>";
+            }
+        }
     </script>
 </body>
 
