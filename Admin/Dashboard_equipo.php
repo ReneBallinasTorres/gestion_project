@@ -53,7 +53,6 @@ $result2 = $conexion->query($query2);
 
 
 // Consulta para obtener los equipos, filtrando si hay un término de búsqueda
-// Inicializamos la variable de búsqueda
 $search = "";
 if (isset($_GET['search']) && !empty($_GET['search'])) {
     $search = "%" . mysqli_real_escape_string($conexion, $_GET['search']) . "%";

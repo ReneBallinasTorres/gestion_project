@@ -39,7 +39,6 @@ include '../connection/connection.php';
 // Obtener los proyectos creados por el líder
 $query = "SELECT p.id_proyecto FROM proyectos p
         JOIN usuarios u ON u.id_usuario = p.id_usuario WHERE u.id_rol = 2 AND u.id_usuario = '$id'";
-
 $resultado_proyectos = mysqli_query($conexion, $query);
 
 // Guardar los ID de los proyectos en un array
@@ -56,7 +55,6 @@ if (!empty($proyectos_lider)) {
                 FROM equipos e LEFT JOIN detalle_equipos de ON e.id_equipo = de.id_equipo
                 LEFT JOIN usuarios u ON de.id_usuario = u.id_usuario LEFT JOIN proyectos p ON e.id_proyecto = p.id_proyecto
                 WHERE e.id_usuario = '$id' GROUP BY e.id_equipo, p.n_proyecto";
-
     $resultado_equipos = mysqli_query($conexion, $query_equipos);
 }
 
@@ -69,7 +67,6 @@ $result2 = $conexion->query($query2);
 
 
 // Consulta para obtener los equipos, filtrando si hay un término de búsqueda
-// Inicializamos la variable de búsqueda
 $search = "";
 if (isset($_GET['search']) && !empty($_GET['search'])) {
     $search = "%" . mysqli_real_escape_string($conexion, $_GET['search']) . "%";
@@ -106,7 +103,6 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
 </head>
 
 <body>
-
     <!-- Sidebar -->
     <div class="sidebar">
         <h2>Lider Panel</h2>

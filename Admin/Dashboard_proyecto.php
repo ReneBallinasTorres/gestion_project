@@ -36,7 +36,7 @@ mysqli_close($conexion);
 
 <?php
 /*Consultas para invocar datos de BD y Mostarlos (Aqui seran tosdas las invocaciopnes, consultas, etc.
-    Para que no choque con los permisos y validaciones de acceso que estan arriba)*/
+Para que no choque con los permisos y validaciones de acceso que estan arriba)*/
 include '../connection/connection.php';
 $query = "SELECT proyectos.*, usuarios.n_usuario, usuarios.a_p, usuarios.a_m 
             FROM proyectos JOIN usuarios ON proyectos.id_usuario = usuarios.id_usuario";
@@ -65,7 +65,6 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
     $query = "SELECT proyectos.* FROM proyectos";
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="es">

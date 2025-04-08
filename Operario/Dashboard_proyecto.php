@@ -1,37 +1,61 @@
 <?php
-session_start();
 include '../connection/connection.php'; // Conexión a la BD
+session_start();
 
 // Verifica si el usuario ha iniciado sesión
-if (!isset($_SESSION['usuarios'])) {
+if (!isset($_SESSION['id_usuario'])) {
     echo '<script> 
             alert("Por favor, inicia sesión");
-            window.location="../components/Login_Operario.php";
+            window.location="../components/Login_Lider.php";
         </script>';
     session_destroy();
     die();
 }
 
 // Obtiene el ID del usuario desde la sesión
-$id = $_SESSION['usuarios'];
+$id = $_SESSION['id_usuario'];
 
-// Consulta para verificar si el usuario tiene rol de operario (id_rol = 3)
+// Consulta para verificar si el usuario tiene rol de Operario (id_rol = 3)
 $consulta = "SELECT * FROM usuarios WHERE id_usuario = '$id' AND id_rol = 3";
 $resultado = mysqli_query($conexion, $consulta);
 $Operario = mysqli_fetch_assoc($resultado);
 
-// Si el usuario no es operario, redirigirlo
+// Si el usuario no es admin, redirigirlo
 if (!$Operario) {
     echo '<script>
-            alert("Acceso denegado. No tienes permisos de operario.");
+            alert("Acceso denegado. No tienes permisos de Operario.");
             window.location="../Index.php";
         </script>';
     session_destroy();
     die();
 }
 
-// Cerrar conexión
 mysqli_close($conexion);
+?>
+
+<?php
+/*Consultas para invocar datos de BD y Mostarlos (Aqui seran tosdas las invocaciopnes, consultas, etc.
+    Para que no choque con los permisos y validaciones de acceso que estan arriba)*/
+include '../connection/connection.php';
+$query = "SELECT DISTINCT p.*, u.n_usuario, u.a_p, u.a_m FROM proyectos p INNER JOIN equipos e ON e.id_proyecto = p.id_proyecto
+INNER JOIN detalle_equipos de ON de.id_equipo = e.id_equipo INNER JOIN usuarios u ON p.id_usuario = u.id_usuario
+WHERE de.id_usuario = '$id'";
+$resultado_proyectos = mysqli_query($conexion, $query);
+
+// Consulta para obtener los proyectos, filtrando si hay un término de búsqueda
+$search = "";
+if (isset($_GET['search']) && !empty($_GET['search'])) {
+    $search = mysqli_real_escape_string($conexion, $_GET['search']);
+    $query = "SELECT proyectos.* 
+            FROM proyectos
+            WHERE proyectos.n_proyecto LIKE '%$search%' 
+            OR proyectos.descripcion LIKE '%$search%' 
+            OR proyectos.objetivos LIKE '%$search%' 
+            OR proyectos.fecha_inicio LIKE '%$search%' 
+            OR proyectos.fecha_fin LIKE '%$search%'";
+} else {
+    $query = "SELECT proyectos.* FROM proyectos";
+}
 ?>
 
 <!DOCTYPE html>
@@ -55,8 +79,9 @@ mysqli_close($conexion);
         <h2>Operario Panel</h2>
         <ul>
             <li><a href="Dashboard.php"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-            <li><a href="Dashboard_equipo.php"><i class="fas fa-users"></i> Equipos</a></li>
             <li><a href="Dashboard_proyecto.php"><i class="fas fa-box"></i> Proyectos</a></li>
+            <li><a href="Dashboard_equipo.php"><i class="fas fa-users"></i> Equipos</a></li>
+            <li><a href="Dashboard_actividades.php"><i class="fas fa-users"></i> Actividades</a></li>
             <li><a href="../Logout.php"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
         </ul>
     </div>
@@ -66,7 +91,7 @@ mysqli_close($conexion);
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <div class="container-fluid">
-                <h4 class="me-auto"><b>Dashboard</b></h4>
+                <h4 class="me-auto"><b>Proyectos Designados</b></h4>
                 <div class="d-flex align-items-center">
                     <span class="me-3"><i class="fas fa-bell"></i> <b>Notificaciones</b></span>
                     <span class="me-3"><i class="fas fa-user"></i> <b><?php echo $Operario['n_usuario']; ?> <?php echo $Operario['a_p']; ?> <?php echo $Operario['a_m']; ?></b></span>
@@ -74,11 +99,48 @@ mysqli_close($conexion);
                 </div>
             </div>
         </nav>
+
+        <!-- Formulario y Tabla -->
+        <div class="container mt-4">
+            <div class="d-flex justify-content-between mb-3">
+                <form class="d-flex" method="GET">
+                    <input class="form-control me-2" type="search" placeholder="Buscar usuario" name="search">
+                    <button class="btn btn-outline-success" type="submit">Buscar</button>
+                </form>
+            </div>
+            <table class="table table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID Proyecto</th>
+                        <th>Nombre</th>
+                        <th>Objetivos</th>
+                        <th>Descripción</th>
+                        <th>Fecha de Inicio</th>
+                        <th>Fecha de Finalización</th>
+                        <th>Observaciones</th>
+                        <th>Lider Encargado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($proyecto = mysqli_fetch_assoc($resultado_proyectos)) : ?>
+                        <tr>
+                            <td><?php echo $proyecto['id_proyecto']; ?></td>
+                            <td><?php echo $proyecto['n_proyecto']; ?></td>
+                            <td><?php echo $proyecto['objetivos']; ?></td>
+                            <td><?php echo $proyecto['descripcion']; ?></td>
+                            <td><?php echo $proyecto['fecha_inicio']; ?></td>
+                            <td><?php echo $proyecto['fecha_fin']; ?></td>
+                            <td><?php echo $proyecto['observaciones']; ?></td>
+                            <td><?php echo $proyecto['n_usuario'] . ' ' . $proyecto['a_p'] . ' ' . $proyecto['a_m']; ?></td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Bootstrap y JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 
 </body>
 

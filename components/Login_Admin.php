@@ -22,7 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($usuario['id_rol'] == 1) {
                 header("Location: ../Admin/Dashboard.php");
             } else {
-                header("Location: ../Index.php");
+                header("Location: Login_Admin.php");
             }
             exit();
         } else {

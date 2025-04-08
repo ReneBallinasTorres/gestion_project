@@ -3,7 +3,7 @@ session_start();
 include '../connection/connection.php'; // Conexión a la BD
 
 // Verifica si el usuario ha iniciado sesión
-if (!isset($_SESSION['usuarios'])) {
+if (!isset($_SESSION['id_usuario'])) {
     echo '<script> 
             alert("Por favor, inicia sesión");
             window.location="../components/Login_Operario.php";
@@ -13,7 +13,7 @@ if (!isset($_SESSION['usuarios'])) {
 }
 
 // Obtiene el ID del usuario desde la sesión
-$id = $_SESSION['usuarios'];
+$id = $_SESSION['id_usuario'];
 
 // Consulta para verificar si el usuario tiene rol de operario (id_rol = 3)
 $consulta = "SELECT * FROM usuarios WHERE id_usuario = '$id' AND id_rol = 3";
@@ -23,7 +23,7 @@ $Operario = mysqli_fetch_assoc($resultado);
 // Si el usuario no es operario, redirigirlo
 if (!$Operario) {
     echo '<script>
-            alert("Acceso denegado. No tienes permisos de operario.");
+            alert("Acceso denegado. No tienes permisos de Operario.");
             window.location="../Index.php";
         </script>';
     session_destroy();
@@ -55,8 +55,9 @@ mysqli_close($conexion);
         <h2>Operario Panel</h2>
         <ul>
             <li><a href="Dashboard.php"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-            <li><a href="Dashboard_equipo.php"><i class="fas fa-users"></i> Equipos</a></li>
             <li><a href="Dashboard_proyecto.php"><i class="fas fa-box"></i> Proyectos</a></li>
+            <li><a href="Dashboard_equipo.php"><i class="fas fa-users"></i> Equipos</a></li>
+            <li><a href="Dashboard_actividades.php"><i class="fas fa-users"></i> Actividades</a></li>
             <li><a href="../Logout.php"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
         </ul>
     </div>

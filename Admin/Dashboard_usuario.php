@@ -42,14 +42,12 @@ $query = "SELECT usuarios.*, roles.n_rol
         FROM usuarios JOIN roles ON usuarios.id_rol = roles.id_rol";
 $resultado_usuarios = mysqli_query($conexion, $query);
 
-
 // Consulta para obtener los datos de usuarios
 $query1 = "SELECT id_rol, n_rol FROM roles;";
 $result1 = $conexion->query($query1);
 
 $query2 = "SELECT id_rol, n_rol FROM roles;";
 $result2 = $conexion->query($query2);
-
 
 // Consulta para obtener los usuarios, filtrando si hay un término de búsqueda
 $search = "";
@@ -63,7 +61,6 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
         JOIN roles ON usuarios.id_rol = roles.id_rol";
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="es">

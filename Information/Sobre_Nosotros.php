@@ -10,7 +10,6 @@
 </head>
 
 <body>
-<!-- Navbar -->
     <?php include '../Components/Navbar-Inf.php'; ?>
 
     <section class="about-section">

@@ -55,7 +55,6 @@
 </head>
 
 <body>
-
     <?php include '../components/Navbar-Inf.php'; ?>
 
     <div class="container cards-container">

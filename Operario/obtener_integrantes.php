@@ -5,7 +5,8 @@ if (isset($_GET['id_proyecto'])) {
     $id_proyecto = $_GET['id_proyecto'];
 
     // Consulta para obtener los integrantes del equipo de ese proyecto
-    $query = "SELECT u.id_usuario, u.n_usuario FROM usuarios u
+    $query = "SELECT u.id_usuario, u.n_usuario 
+            FROM usuarios u
             JOIN detalle_equipos de ON u.id_usuario = de.id_usuario
             JOIN equipos e ON de.id_equipo = e.id_equipo
             WHERE e.id_proyecto = '$id_proyecto'";

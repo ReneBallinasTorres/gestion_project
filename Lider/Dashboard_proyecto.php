@@ -36,13 +36,12 @@ mysqli_close($conexion);
 
 <?php
 /*Consultas para invocar datos de BD y Mostarlos (Aqui seran tosdas las invocaciopnes, consultas, etc.
-    Para que no choque con los permisos y validaciones de acceso que estan arriba)*/
+Para que no choque con los permisos y validaciones de acceso que estan arriba)*/
 include '../connection/connection.php';
 $query = "SELECT proyectos.*, usuarios.n_usuario, usuarios.a_p, usuarios.a_m 
         FROM proyectos JOIN usuarios ON proyectos.id_usuario = usuarios.id_usuario
         WHERE proyectos.id_usuario = '$id'"; // Filtra proyectos solo para el usuario actual (líder)
 $resultado_proyectos = mysqli_query($conexion, $query);
-
 
 // Consulta para obtener los datos de proyectos
 $query1 = "SELECT id_usuario, n_usuario, a_p, a_m FROM usuarios WHERE id_rol = 2";
@@ -51,14 +50,12 @@ $result1 = $conexion->query($query1);
 $query2 = "SELECT id_usuario, n_usuario, a_p, a_m FROM usuarios WHERE id_rol = 2";
 $result2 = $conexion->query($query2);
 
-
 // Consulta para obtener los proyectos, filtrando si hay un término de búsqueda
 $search = "";
 if (isset($_GET['search']) && !empty($_GET['search'])) {
     $search = mysqli_real_escape_string($conexion, $_GET['search']);
     $query = "SELECT proyectos.* 
-            FROM proyectos
-            WHERE proyectos.n_proyecto LIKE '%$search%' 
+            FROM proyectos WHERE proyectos.n_proyecto LIKE '%$search%' 
             OR proyectos.descripcion LIKE '%$search%' 
             OR proyectos.objetivos LIKE '%$search%' 
             OR proyectos.fecha_inicio LIKE '%$search%' 
@@ -83,7 +80,6 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
 </head>
 
 <body>
-
     <!-- Sidebar -->
     <div class="sidebar">
         <h2>Lider Panel</h2>

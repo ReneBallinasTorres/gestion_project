@@ -22,7 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($usuario['id_rol'] == 3) {
                 header("Location: ../Operario/Dashboard.php");
             } else {
-                header("Location: ../Index.php");
+                header("Location: Login_Operario.php");
             }
             exit();
         } else {
